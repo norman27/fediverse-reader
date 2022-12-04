@@ -1,0 +1,18 @@
+[
+    {
+        "account": "mastodon.social/@Gargron",
+        "url": "https://mastodon.social/api/v1/accounts/1"
+    },
+    {
+        "account": "mastodon.nu/@gretathunberg",
+        "url": "https://mastodon.nu/api/v1/accounts/109303381328440258"
+    },
+    {
+        "account": "pixelfed.social/Laszlo",
+        "url": "https://pixelfed.social/api/pixelfed/v1/accounts/305979241479147520"
+    },
+    {
+        "account": "EU_Commission@social.network.europa.eu",
+        "url": "https://social.network.europa.eu/api/v1/accounts/108163199623695787"
+    }
+]
