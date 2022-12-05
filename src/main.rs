@@ -43,7 +43,7 @@ async fn list() -> impl Responder {
     let subscriptions: Vec<Subscription> = match serde_json::from_str(&data) {
         Ok (subscriptions) => subscriptions,
         Err (error) => {
-            println!("ERROR deserializing subscriptions {}", error.to_string());
+            println!("ERROR deserializing subscriptions {}", error);
             Vec::new()
         },
     };
@@ -56,7 +56,7 @@ async fn list() -> impl Responder {
         let mut toots = match get_toot_context(url).await {
             Ok (toots) => toots,
             Err (error) => {
-                println!("ERROR getting toots {}", error.to_string());
+                println!("ERROR getting toots {}", error);
                 Vec::new()
             }
         };
@@ -67,21 +67,21 @@ async fn list() -> impl Responder {
 
     let output = resp
         .into_iter()
-        .filter(|t| t.content != "") // do not display boosts etc
+        .filter(|t| !t.content.is_empty()) // do not display boosts etc
         .map(|t| {
             // haha my frontend
-            format!("
-            <div style=\"border: 1px solid #000; background-color: #eef; padding: 5px; margin: 5px\">
-                <div style=\"display: flow-root\">
-                    <img src=\"{}\" align=\"left\" width=\"64\" height=\"64\" />
-                    <a href=\"{}\" target=\"_blank\">{}</a><br />
+            format!(r#"
+            <div style="border: 1px solid #000; background-color: #eef; padding: 5px; margin: 5px">
+                <div style="display: flow-root">
+                    <img src="{}" align="left" width="64" height="64" />
+                    <a href="{}" target="_blank">{}</a><br />
                     {}
                 </div>
                 <div>
                     {}
                 </div>
             </div>
-            ",
+            "#,
             t.account.avatar,
             t.account.url,
             t.account.username,
