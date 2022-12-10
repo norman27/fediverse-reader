@@ -3,35 +3,24 @@ use anyhow::Result as Fallible;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::fs;
+use activitypub::Status;
 
-#[derive(Serialize, Deserialize, Debug)]
+mod activitypub;
+
+#[derive(Serialize, Deserialize)]
 pub struct Subscription {
     account: String,
     url: String,
 }
 
-#[derive(serde::Deserialize, Debug)]
-pub struct Account {
-    avatar: String,
-    url: String,
-    username: String,
-}
-
-#[derive(serde::Deserialize, Debug)]
-pub struct TootContext {
-    account: Account,
-    content: String,
-    created_at: String,
-}
-
-pub async fn get_toot_context(url: String) -> Fallible<Vec<TootContext>> {
+pub async fn get_toot_context(url: String) -> Fallible<Vec<Status>> {
     let client = Client::new();
 
     Ok(client
         .get(url)
         .send()
         .await?
-        .json::<Vec<TootContext>>()
+        .json::<Vec<Status>>()
         .await?)
 }
 
@@ -67,14 +56,21 @@ async fn list() -> impl Responder {
 
     let output = resp
         .into_iter()
-        .filter(|t| !t.content.is_empty()) // do not display boosts etc
+        .filter(|status| !status.content.is_empty()) // do not display boosts etc
         .map(|t| {
-            // haha my frontend
+            // @TODO apply output safety
+            let attachments = t.media_attachments.into_iter().map(|attachment| {
+                format!(r#"<img src="{}" width="64" height="64" style="border: 1px solid #000; padding:2px" />"#, attachment.preview_url)
+            }).collect::<String>();
+            
             format!(r#"
             <div style="border: 1px solid #000; background-color: #eef; padding: 5px; margin: 5px">
                 <div style="display: flow-root">
                     <img src="{}" align="left" width="64" height="64" />
                     <a href="{}" target="_blank">{}</a><br />
+                    {}
+                </div>
+                <div>
                     {}
                 </div>
                 <div>
@@ -86,7 +82,8 @@ async fn list() -> impl Responder {
             t.account.url,
             t.account.username,
             t.created_at,
-            t.content)
+            t.content,
+            attachments)
         })
         .collect::<String>();
         
